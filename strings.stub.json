@@ -1,0 +1,14 @@
+{
+    "hello": "stub.hello",
+    "categories": {
+        "exposition": "stub.categories.exposition",
+        "lecture": "stub.categories.lecture",
+        "concert": "stub.categories.concert"
+    },
+    "dates_fancy": {
+        "today": "stub.dates_fancy.today",
+        "tomorrow": "stub.dates_fancy.tomorrow",
+        "next_week": "stub.dates_fancy.next_week",
+        "custom": "stub.dates_fancy.custom"
+    }
+}
