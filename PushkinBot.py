@@ -10,6 +10,7 @@ class PushkinBot(telegram.Bot):
         user_id = update.message.user.id
         await self.api.send_message(user_id, "AAAAAAAAA")
         await self.api.send_sticker(user_id, "CAADAgADOAEAAkJPOQABXRK1Mn5TOgsC")
+        
 
     async def send_res(self):
         p_api = PushkinApi(self.loop)
