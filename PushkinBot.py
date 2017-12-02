@@ -148,7 +148,7 @@ class PushkinBot(telegram.Bot):
             response = await self.p_api.api_get("https://all.culture.ru/api/2.2/events?organizations=607", params=params)
 
             if response["total"] == 0:
-                await self.api.send_message(user_id, "LIFE IS PAIN I HATE~")
+                await self.api.send_message(user_id, "В этот день ещё нет мероприятий.")
                 return
 
             event = response["events"][0]
