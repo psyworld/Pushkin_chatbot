@@ -28,6 +28,16 @@ stickers = [
     'CAADAgADEgEAAkJPOQAB-Mo9Ns1FuFEC'
 ]
 
+hours_of_work = [
+    "выходной",#пн
+    "11:00--20:00",#вт
+    "11:00--20:00",#ср
+    "11:00--21:00",#чт
+    "11:00--21:00",#пт,
+    "11:00--20:00",#сб
+    "11:00--20:00",#вс
+]
+
 class PushkinBot(telegram.Bot):
     def __init__(self, config, loop=None):
         super().__init__(config, loop=loop)
@@ -116,6 +126,9 @@ class PushkinBot(telegram.Bot):
         cur_ts = (cur_ts - cur_ts % (24*60*60))
         D = 1
 
+        start_ts = 0
+        end_ts = 0
+
         if update.message.text == "сегодня":
             date_ts = cur_ts
             start_ts = date_ts
@@ -134,11 +147,16 @@ class PushkinBot(telegram.Bot):
                 des_ts = int(datetime.datetime.strptime(update.message.text, "%d.%m.%Y").strftime("%s"))
                 des_ts = (des_ts - des_ts % 24*60*60)
                 date_ts = des_ts
+                start_ts = date_ts
+                end_ts = int(date_ts) + (24*60*60)
+                D = 1
             except:
               pass
               # do fucking nothing
 
         if date_ts is not None:
+
+            day_of_week = datetime.datetime.fromtimestamp(start_ts).isoweekday() - 1;
 
             params = {
                 'start': start_ts * 1000,
@@ -163,4 +181,4 @@ class PushkinBot(telegram.Bot):
 
             start_date = (datetime.datetime.fromtimestamp(event["start"]/1000).strftime("%d.%m.%Y %I:%M %p"))
             end_date = (datetime.datetime.fromtimestamp(event["end"]/1000).strftime("%d.%m.%Y %I:%M %p"))
-            r = await self.api.send_message(user_id, "{} -- {}:\nВыберите категорию:".format(datetime.datetime.fromtimestamp(start_ts).strftime("%d.%m.%Y %I:%M %p"), datetime.datetime.fromtimestamp(end_ts).strftime("%d.%m.%Y %I:%M %p")), reply_markup=kb_inline.json, parse_mode='Markdown')
+            r = await self.api.send_message(user_id, "{} -- {}:\nЧасы работы: {}\nВыберите категорию:".format(datetime.datetime.fromtimestamp(start_ts).strftime("%d.%m.%Y %I:%M %p"), datetime.datetime.fromtimestamp(end_ts).strftime("%d.%m.%Y %I:%M %p"), hours_of_work[day_of_week]), reply_markup=kb_inline.json, parse_mode='Markdown')
