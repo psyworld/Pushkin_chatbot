@@ -60,19 +60,28 @@ class PushkinBot(telegram.Bot):
         print("start_ts", start_ts * 1000)
         res = await self.p_api.api_get("https://all.culture.ru/api/2.2/events?organizations=607", params=params)
 
-        if res["total"] == 0 or res["total"] <= data['offset']:
+        if res["total"] == 0:
             await self.api.send_message(user_id, "LIFE IS PAIN I HATE~")
             return
 
+        found = False
+        offset_counter = 0
+        for event in res['events']:
+            if event["category"]["sysName"] == data["sysName"]:
+                if offset_counter == data["offset"]:
+                    kb_inline = telegram.InlineKeyboardMarkup()
+                    cb_data = json.dumps({"date_ts": start_ts, "offset": data['offset'] + 1, "sysName": data["sysName"]})
+                    print(cb_data)
+                    kb_inline.add_button("Далее >>", callback_data=cb_data)
+                    start_date = (datetime.datetime.fromtimestamp(event["start"]/1000).strftime("%d.%m.%Y %I:%M %p"))
+                    end_date = (datetime.datetime.fromtimestamp(event["end"]/1000).strftime("%d.%m.%Y %I:%M %p"))
+                    r = await self.api.send_message(user_id, "*{}*. {}\n{} -- {}".format(event["category"]["name"], event["name"], start_date, end_date), reply_markup=kb_inline.json, parse_mode='Markdown')
+                    found = True
+                    break;
+                offset_counter += 1
 
-        event = res['events'][data['offset']]
-        kb_inline = telegram.InlineKeyboardMarkup()
-        cb_data = json.dumps({"date_ts": start_ts, "offset": data['offset']+1})
-        print(cb_data)
-        kb_inline.add_button("Далее >>", callback_data=cb_data)
-        start_date = (datetime.datetime.fromtimestamp(event["start"]/1000).strftime("%d.%m.%Y %I:%M %p"))
-        end_date = (datetime.datetime.fromtimestamp(event["end"]/1000).strftime("%d.%m.%Y %I:%M %p"))
-        r = await self.api.send_message(user_id, "*{}*. {}\n{} -- {}".format(event["category"]["name"], event["name"], start_date, end_date), reply_markup=kb_inline.json, parse_mode='Markdown')
+        if not found:
+            await self.api.send_message(user_id, "LIFE IS PAIN I HATE~")
 
 
 
@@ -130,4 +139,4 @@ class PushkinBot(telegram.Bot):
 
             start_date = (datetime.datetime.fromtimestamp(event["start"]/1000).strftime("%d.%m.%Y %I:%M %p"))
             end_date = (datetime.datetime.fromtimestamp(event["end"]/1000).strftime("%d.%m.%Y %I:%M %p"))
-            r = await self.api.send_message(user_id, "*{}* {}\n{} -- {}".format(event["category"]["name"], event["name"], start_date, end_date), reply_markup=kb_inline.json, parse_mode='Markdown')
+            r = await self.api.send_message(user_id, "Выберите категорию:", reply_markup=kb_inline.json, parse_mode='Markdown')
