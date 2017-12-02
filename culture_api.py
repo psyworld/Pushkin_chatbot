@@ -11,5 +11,5 @@ http = PushkinApi(loop)
 
 async def events(start=0, end=0, offset=0,limit=10, sort='start'):
     params = {"start": start, "end": end, "offset": offset, "limit": limit, "sort": sort}
-    r = await http.api_get("https://all.culture.ru/api/2.2/events", params=params)git status
+    r = await http.api_get("https://all.culture.ru/api/2.2/events", params=params)
     return r
