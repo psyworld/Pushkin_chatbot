@@ -3,6 +3,7 @@ import datetime
 from pushkin_api import PushkinApi
 import json
 from helpers import get_range
+import random
 
 hello_phrase = '''
 Добрый день! Вас приветствует официальный телеграм-бот Государственного музея изобразительных искусств имени А.С. Пушкина. Это музейный комплекс, обладающий одним из крупнейших в России художественных собраний зарубежного искусства. Сегодня в его коллекции находится около 700 тысяч произведений разных эпох, начиная с Древнего Египта и античной Греции и заканчивая началом XXI века. \n
@@ -11,6 +12,21 @@ hello_phrase = '''
 У нас также есть свой стикерпак – он доступен для установки. \n
 Хорошего дня, ждем вас в музее! \n
 '''
+
+cool_links = """
+*Перейти к покупке билетов онлайн:* \n https://tickets.arts-museum.ru/ru/ \n
+*Узнать режим работы музея:* \n http://www.arts-museum.ru/visitors/contact/index.php \n
+*Новости:* \n http://www.arts-museum.ru/museum/news/index.php
+"""
+
+stickers = [
+    'CAADAgADMAEAAkJPOQABhh2uh-uMEhYC',
+    'CAADAgADOAEAAkJPOQABXRK1Mn5TOgsC',
+    'CAADAgADJgEAAkJPOQAB6lqgusQR1YUC',
+    'CAADAgADHAEAAkJPOQABSSG0t8PoTVsC',
+    'CAADAgADLgEAAkJPOQABajImSfltvzcC',
+    'CAADAgADEgEAAkJPOQAB-Mo9Ns1FuFEC'
+]
 
 class PushkinBot(telegram.Bot):
     def __init__(self, config, loop=None):
@@ -31,11 +47,7 @@ class PushkinBot(telegram.Bot):
 
     async def links(self, update):
         user_id = update.message.user.id
-        text = """*Перейти к покупке билетов онлайн:* \n https://tickets.arts-museum.ru/ru/ \n
-*Узнать режим работы музея:* \n http://www.arts-museum.ru/visitors/contact/index.php \n
-*Новости:* \n http://www.arts-museum.ru/museum/news/index.php
-        """
-        await self.api.send_message(user_id, text, parse_mode='Markdown')
+        await self.api.send_message(user_id, cool_links, parse_mode='Markdown')
 
     async def send_next(self, update):
         user_id = update.callback_query.user.id
@@ -70,7 +82,7 @@ class PushkinBot(telegram.Bot):
         kb.add_button("сегодня")
         kb.add_button("завтра")
         await self.api.send_message(user_id, hello_phrase, reply_markup=kb.json)
-        await self.api.send_sticker(user_id, "CAADAgADOAEAAkJPOQABXRK1Mn5TOgsC")
+        await self.api.send_sticker(user_id, random.choice(stickers))
 
     async def start(self, update):
         user_id = update.message.user.id
@@ -107,9 +119,15 @@ class PushkinBot(telegram.Bot):
                 return
 
             event = response["events"][0]
-            callback_data = json.dumps({"date_ts": date_ts, "offset": 1})
+            callback_data_vys = json.dumps({"date_ts": date_ts, "offset": 0, 'sysName': "vystavki"})
+            callback_data_kons = json.dumps({"date_ts": date_ts, "offset": 0, 'sysName': "koncerty"})
+            callback_data_vst = json.dumps({"date_ts": date_ts, "offset": 0, 'sysName': "vstrechi"})
             kb_inline = telegram.InlineKeyboardMarkup()
-            kb_inline.add_button("Далее >>", callback_data=callback_data)
+
+            kb_inline.add_button("Выставки >>", callback_data=callback_data_vys)
+            kb_inline.add_button("Встречи >>", callback_data=callback_data_vst)
+            kb_inline.add_button("Концерты >>", callback_data=callback_data_kons)
+
             start_date = (datetime.datetime.fromtimestamp(event["start"]/1000).strftime("%d.%m.%Y %I:%M %p"))
             end_date = (datetime.datetime.fromtimestamp(event["end"]/1000).strftime("%d.%m.%Y %I:%M %p"))
             r = await self.api.send_message(user_id, "*{}* {}\n{} -- {}".format(event["category"]["name"], event["name"], start_date, end_date), reply_markup=kb_inline.json, parse_mode='Markdown')
