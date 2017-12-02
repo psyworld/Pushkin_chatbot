@@ -163,4 +163,4 @@ class PushkinBot(telegram.Bot):
 
             start_date = (datetime.datetime.fromtimestamp(event["start"]/1000).strftime("%d.%m.%Y %I:%M %p"))
             end_date = (datetime.datetime.fromtimestamp(event["end"]/1000).strftime("%d.%m.%Y %I:%M %p"))
-            r = await self.api.send_message(user_id, "Выберите категорию:", reply_markup=kb_inline.json, parse_mode='Markdown')
+            r = await self.api.send_message(user_id, "{} -- {}:\nВыберите категорию:".format(datetime.datetime.fromtimestamp(start_ts).strftime("%d.%m.%Y %I:%M %p"), datetime.datetime.fromtimestamp(end_ts).strftime("%d.%m.%Y %I:%M %p")), reply_markup=kb_inline.json, parse_mode='Markdown')
