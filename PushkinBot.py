@@ -61,7 +61,8 @@ class PushkinBot(telegram.Bot):
     async def send_next(self, update):
         user_id = update.callback_query.user.id
         data = json.loads(update.callback_query.data)
-        start_ts, end_ts = get_range(data)
+        print("AAAAAAA", data)
+        start_ts, end_ts = get_range(data, data['D'])
         params = {
             "start": start_ts * 1000,
             'sort': 'start'
@@ -77,9 +78,10 @@ class PushkinBot(telegram.Bot):
         offset_counter = 0
         for event in res['events']:
             if event["category"]["sysName"] == data["sysName"]:
-                if offset_counter == data["offset"]:
+                if offset_counter == data["o"]:
                     kb_inline = telegram.InlineKeyboardMarkup()
-                    cb_data = json.dumps({"date_ts": start_ts, "offset": data['offset'] + 1, "sysName": data["sysName"]})
+                    data['o'] += 1
+                    cb_data = json.dumps(data)
                     cbn_data = json.dumps({"type": "notification", "id": event["_id"]})
                     print(cbn_data)
                     # todo handler cbn
@@ -103,6 +105,7 @@ class PushkinBot(telegram.Bot):
         kb = telegram.ReplyKeyboardMarkup()
         kb.add_button("сегодня")
         kb.add_button("завтра")
+        kb.add_button("выходные")
         await self.api.send_message(user_id, hello_phrase, reply_markup=kb.json)
         await self.api.send_sticker(user_id, random.choice(stickers))
 
@@ -111,11 +114,21 @@ class PushkinBot(telegram.Bot):
         date_ts = None
         cur_ts = int(datetime.datetime.now().strftime("%s"))
         cur_ts = (cur_ts - cur_ts % (24*60*60))
+        D = 1
 
         if update.message.text == "сегодня":
             date_ts = cur_ts
+            start_ts = date_ts
+            end_ts = int(date_ts) + (24*60*60)
         elif update.message.text == "завтра":
             date_ts = cur_ts + (24*60*60)
+            start_ts = date_ts
+            end_ts = int(date_ts) + (24*60*60)
+        elif update.message.text == "выходные":
+            date_ts = cur_ts + (24*60*60)
+            start_ts = date_ts
+            end_ts = int(date_ts) + (24*60*60)*2
+            D = 2
         else:
             try:
                 des_ts = int(datetime.datetime.strptime(update.message.text, "%d.%m.%Y").strftime("%s"))
@@ -126,8 +139,6 @@ class PushkinBot(telegram.Bot):
               # do fucking nothing
 
         if date_ts is not None:
-            start_ts = date_ts
-            end_ts = int(date_ts) + (24*60*60)
 
             params = {
                 'start': start_ts * 1000,
@@ -141,9 +152,9 @@ class PushkinBot(telegram.Bot):
                 return
 
             event = response["events"][0]
-            callback_data_vys = json.dumps({"date_ts": date_ts, "offset": 0, 'sysName': "vystavki"})
-            callback_data_kons = json.dumps({"date_ts": date_ts, "offset": 0, 'sysName': "koncerty"})
-            callback_data_vst = json.dumps({"date_ts": date_ts, "offset": 0, 'sysName': "vstrechi"})
+            callback_data_vys = json.dumps({"date_ts": date_ts, "o": 0, 'sysName': "vystavki", 'D': D})
+            callback_data_kons = json.dumps({"date_ts": date_ts, "o": 0, 'sysName': "koncerty", 'D': D})
+            callback_data_vst = json.dumps({"date_ts": date_ts, "o": 0, 'sysName': "vstrechi", 'D': D})
             kb_inline = telegram.InlineKeyboardMarkup()
 
             kb_inline.add_button("Выставки >>", callback_data=callback_data_vys)
