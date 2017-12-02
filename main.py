@@ -1,6 +1,5 @@
 import asyncio
 from config import config
-import logging
 from PushkinBot import PushkinBot
 
 
