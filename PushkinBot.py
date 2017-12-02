@@ -42,14 +42,16 @@ class PushkinBot(telegram.Bot):
         data = json.loads(update.callback_query.data)
         start_ts, end_ts = get_range(data)
         params = {
-            "start": start_ts,
+            "start": start_ts * 1000,
             'sort': 'start'
         }
+        print("start_ts", start_ts * 1000)
         res = await self.p_api.api_get("https://all.culture.ru/api/2.2/events?organizations=607", params=params)
 
-        if res["total"] == 0:
-            await self.api.send_message(user_id, "В указанную дату нет событий.")
+        if res["total"] == 0 or res["total"] <= data['offset']:
+            await self.api.send_message(user_id, "LIFE IS PAIN I HATE~")
             return
+
 
         event = res['events'][data['offset']]
         kb_inline = telegram.InlineKeyboardMarkup()
@@ -92,7 +94,7 @@ class PushkinBot(telegram.Bot):
             end_ts = int(date_ts) + (24*60*60)
 
             params = {
-                'start': start_ts,
+                'start': start_ts * 1000,
                 'limit': 100,
                 'sort': 'start'
             }
