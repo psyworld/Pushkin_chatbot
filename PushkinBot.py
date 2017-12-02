@@ -58,7 +58,9 @@ class PushkinBot(telegram.Bot):
         cb_data = json.dumps({"date_ts": start_ts, "offset": data['offset']+1})
         print(cb_data)
         kb_inline.add_button("Далее >>", callback_data=cb_data)
-        r = await self.api.send_message(user_id, "*{}*. {}\n{} -- {}".format(event["category"]["name"], event["name"], datetime.datetime.fromtimestamp(event["start"]/1000), datetime.datetime.fromtimestamp(event["end"]/1000)), reply_markup=kb_inline.json, parse_mode='Markdown')
+        start_date = (datetime.datetime.fromtimestamp(event["start"]/1000).strftime("%d.%m.%Y %I:%M %p"))
+        end_date = (datetime.datetime.fromtimestamp(event["end"]/1000).strftime("%d.%m.%Y %I:%M %p"))
+        r = await self.api.send_message(user_id, "*{}*. {}\n{} -- {}".format(event["category"]["name"], event["name"], start_date, end_date), reply_markup=kb_inline.json, parse_mode='Markdown')
 
 
 
@@ -86,7 +88,7 @@ class PushkinBot(telegram.Bot):
                 des_ts = (des_ts - des_ts % 24*60*60)
                 date_ts = des_ts
             except:
-              pass  
+              pass
               # do fucking nothing
 
         if date_ts is not None:
@@ -108,5 +110,6 @@ class PushkinBot(telegram.Bot):
             callback_data = json.dumps({"date_ts": date_ts, "offset": 1})
             kb_inline = telegram.InlineKeyboardMarkup()
             kb_inline.add_button("Далее >>", callback_data=callback_data)
-
-            r = await self.api.send_message(user_id, "*{}* {}\n{} -- {}".format(event["category"]["name"], event["name"], datetime.datetime.fromtimestamp(event["start"]/1000), datetime.datetime.fromtimestamp(event["end"]/1000)), reply_markup=kb_inline.json, parse_mode='Markdown')
+            start_date = (datetime.datetime.fromtimestamp(event["start"]/1000).strftime("%d.%m.%Y %I:%M %p"))
+            end_date = (datetime.datetime.fromtimestamp(event["end"]/1000).strftime("%d.%m.%Y %I:%M %p"))
+            r = await self.api.send_message(user_id, "*{}* {}\n{} -- {}".format(event["category"]["name"], event["name"], start_date, end_date), reply_markup=kb_inline.json, parse_mode='Markdown')
