@@ -125,7 +125,7 @@ class PushkinBot(telegram.Bot):
             start_ts = date_ts
             end_ts = int(date_ts) + (24*60*60)
         elif update.message.text == "выходные":
-            date_ts = cur_ts + (24*60*60)
+            date_ts = int((datetime.datetime.today() - datetime.timedelta(days=datetime.datetime.today().isoweekday() % 7 - 1)).strftime('%s'))+ (24 * 60 * 60) * 5
             start_ts = date_ts
             end_ts = int(date_ts) + (24*60*60)*2
             D = 2
