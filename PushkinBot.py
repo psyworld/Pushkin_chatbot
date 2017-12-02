@@ -48,20 +48,15 @@ class PushkinBot(telegram.Bot):
         res = await self.p_api.api_get("https://all.culture.ru/api/2.2/events?organizations=607", params=params)
 
         if res["total"] == 0:
-            await self.api.send_message(user_id, "Ничего нет :С")
+            await self.api.send_message(user_id, "В указанную дату нет событий.")
             return
 
-        offset_counter = 0
-        for event in res['events']:
-            if event["category"]["sysName"] == data['category']:
-                offset_counter += 1
-                if offset_counter >= data['offset']:
-                    kb_inline = telegram.InlineKeyboardMarkup()
-                    cb_data = json.dumps({"date_ts": start_ts, "offset": data['offset']+1, "category": event["category"]["sysName"]})
-                    print(cb_data)
-                    kb_inline.add_button("Далее >>", callback_data=cb_data)
-                    await self.api.send_message(user_id, "{} {}:\n{}".format(event["category"]['name'], event["name"], event["shortDescription"]), reply_markup=kb_inline.json)
-                    break
+        event = res['events'][data['offset']]
+        kb_inline = telegram.InlineKeyboardMarkup()
+        cb_data = json.dumps({"date_ts": start_ts, "offset": data['offset']+1})
+        print(cb_data)
+        kb_inline.add_button("Далее >>", callback_data=cb_data)
+        r = await self.api.send_message(user_id, "{} {}\n{} -- {}".format(event["category"]["name"], event["name"], datetime.datetime.fromtimestamp(event["start"]/1000), datetime.datetime.fromtimestamp(event["end"]/1000)), reply_markup=kb_inline.json)
 
 
 
@@ -89,33 +84,27 @@ class PushkinBot(telegram.Bot):
                 des_ts = (des_ts - des_ts % 24*60*60)
                 date_ts = des_ts
             except:
-                await self.api.send_message(user_id, "oh shit i'm sorry (:-)")
+              pass  
+              # do fucking nothing
 
         if date_ts is not None:
             start_ts = date_ts
             end_ts = int(date_ts) + (24*60*60)
 
-
             params = {
                 'start': start_ts,
-                'offset': 1,
                 'limit': 100,
                 'sort': 'start'
             }
             response = await self.p_api.api_get("https://all.culture.ru/api/2.2/events?organizations=607", params=params)
 
-            used_cats = []
-
             if response["total"] == 0:
-                await self.api.send_message(user_id, "Ничего нет :C")
+                await self.api.send_message(user_id, "LIFE IS PAIN I HATE~")
                 return
 
-            for event in response["events"]:
-                if event["category"]["sysName"] not in used_cats:
-                    used_cats.append(event["category"]["sysName"])
-                    callback_data = json.dumps({"date_ts": date_ts, "offset": 1, "category": event["category"]["sysName"]})
-                    kb_inline = telegram.InlineKeyboardMarkup()
-                    kb_inline.add_button("Далее >>", callback_data=callback_data)
+            event = response["events"][0]
+            callback_data = json.dumps({"date_ts": date_ts, "offset": 1})
+            kb_inline = telegram.InlineKeyboardMarkup()
+            kb_inline.add_button("Далее >>", callback_data=callback_data)
 
-                    r = await self.api.send_message(user_id, "{} {}:\n{}".format(event["category"]["name"], event["name"], event["shortDescription"]), reply_markup=kb_inline.json)
-                    break
+            r = await self.api.send_message(user_id, "{} {}\n{} -- {}".format(event["category"]["name"], event["name"], datetime.datetime.fromtimestamp(event["start"]/1000), datetime.datetime.fromtimestamp(event["end"]/1000)), reply_markup=kb_inline.json)
