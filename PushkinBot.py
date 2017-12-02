@@ -5,4 +5,5 @@ class PushkinBot(telegram.Bot):
         super().__init__(config, loop=loop)
 
     async def handler(self, update):
-        print(update)
+        user_id = update.message.user.id
+        await self.api.send_message(user_id, "AAAAAAAAA")
