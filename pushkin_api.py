@@ -1,6 +1,6 @@
 import signal
 import aiohttp
-
+import sys
 
 class PushkinApi:
     def __init__(self, loop):
@@ -9,6 +9,7 @@ class PushkinApi:
 
     def signal_handler(self, signal, frame):
         self.session.close()
+        sys.exit(0)
 
     async def api_get(self, url, params={}):
         r = await self.session.get(url, params=params)
