@@ -43,11 +43,20 @@ class PushkinBot(telegram.Bot):
         if update.callback_query is not None:
             user_id = update.callback_query.user.id
             if update.callback_query.data[0] == '{':
-                await self.send_next(update)
+                print(update.callback_query.data)
+                type = json.loads(update.callback_query.data).get("type", "")
+                if type == "notification":
+                    await self.notification(update)
+                else:
+                    await self.send_next(update)
 
     async def links(self, update):
         user_id = update.message.user.id
         await self.api.send_message(user_id, cool_links, parse_mode='Markdown')
+
+    async def notification(self, update):
+        user_id = update.callback_query.user.id
+        await self.api.send_message(user_id, "Мы напомним вам о предстоящем мероприятии.")
 
     async def send_next(self, update):
         user_id = update.callback_query.user.id
@@ -71,8 +80,12 @@ class PushkinBot(telegram.Bot):
                 if offset_counter == data["offset"]:
                     kb_inline = telegram.InlineKeyboardMarkup()
                     cb_data = json.dumps({"date_ts": start_ts, "offset": data['offset'] + 1, "sysName": data["sysName"]})
+                    cbn_data = json.dumps({"type": "notification", "id": event["_id"]})
+                    print(cbn_data)
+                    # todo handler cbn
                     print(cb_data)
                     kb_inline.add_button("Далее >>", callback_data=cb_data)
+                    kb_inline.add_button("Напомнить", callback_data=cbn_data)
                     start_date = (datetime.datetime.fromtimestamp(event["start"]/1000).strftime("%d.%m.%Y %I:%M %p"))
                     end_date = (datetime.datetime.fromtimestamp(event["end"]/1000).strftime("%d.%m.%Y %I:%M %p"))
                     r = await self.api.send_message(user_id, "*{}*. {}\n{} -- {}".format(event["category"]["name"], event["name"], start_date, end_date), reply_markup=kb_inline.json, parse_mode='Markdown')
