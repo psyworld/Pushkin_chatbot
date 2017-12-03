@@ -5,10 +5,9 @@ from PushkinBot import PushkinBot
 
 
 async def main(bot, loop):
-    print("A")
-    # await bot.run()
-    # await bot.api.delete_webhook()
-    # await bot.api.set_webhook(config['web_hook'])
+    await bot.run()
+    await bot.api.delete_webhook()
+    await bot.api.set_webhook(config['web_hook'])
 
 
 if __name__ == "__main__":
