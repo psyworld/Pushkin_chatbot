@@ -2,6 +2,7 @@ import signal
 import aiohttp
 import sys
 
+
 class PushkinApi:
     def __init__(self, loop):
         self.session = aiohttp.ClientSession(loop=loop)
